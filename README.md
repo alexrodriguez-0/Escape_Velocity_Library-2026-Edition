@@ -52,11 +52,11 @@ At a high level, the pipeline:
 
 3. Computes line-of-sight velocities using
 
-   $$
+   ```math
    v_{\rm los} = c\,\frac{z_g-z_c}{1+z_c},
-   $$
+   ```
 
-   where \(z_g\) is the galaxy redshift and \(z_c\) is the cluster redshift.
+   where $z_g$ is the galaxy redshift and $z_c$ is the cluster redshift.
 
 4. Iteratively recenters the phase space and removes interlopers using a shifting-gapper-style procedure.
 
@@ -64,9 +64,9 @@ At a high level, the pipeline:
 
 6. Compares the measured edge to a Dehnen/NFW-based theoretical escape profile.
 
-7. Corrects for the finite-sampling suppression of the observed phase-space edge using the calibrated \(Z_v\) model.
+7. Corrects for the finite-sampling suppression of the observed phase-space edge using the calibrated $Z_v$ model.
 
-8. Runs an MCMC inference for \(M_{200}\).
+8. Runs an MCMC inference for $M_{200}$, usually reported as $\log_{10}(M_{200}/M_\odot)$.
 
 The main single-cluster entry point is:
 
@@ -82,34 +82,34 @@ The two-stage pipeline first performs a broad pilot run to identify the preferre
 
 The escape profile is modeled in an accelerating cosmological background as
 
-$$
+```math
 v_{\rm esc}^2(r)
 =
 -2\left[\Psi(r)-\Psi(r_{\rm eq})\right]
 -
 q(z)H^2(z)\left(r^2-r_{\rm eq}^2\right),
-$$
+```
 
 where:
 
-- \(\Psi(r)\) is the matter-only gravitational potential,
-- \(q(z)\) is the deceleration parameter,
-- \(H(z)\) is the Hubble parameter,
-- \(r_{\rm eq}\) is the equivalence radius where inward gravitational acceleration balances the outward cosmological acceleration term.
+- $\Psi(r)$ is the matter-only gravitational potential,
+- $q(z)$ is the deceleration parameter,
+- $H(z)$ is the Hubble parameter,
+- $r_{\rm eq}$ is the equivalence radius where inward gravitational acceleration balances the outward cosmological acceleration term.
 
-The observed phase-space edge is suppressed relative to the true 3D escape profile because the spectroscopic sampling is finite. In radial bin \(j\), the model is approximately
+The observed phase-space edge is suppressed relative to the true 3D escape profile because the spectroscopic sampling is finite. In radial bin $j$, the model is approximately
 
-$$
+```math
 \widehat{v}_{{\rm esc},j}
 \sim
 \frac{v_{\rm esc,th}(R_j;M_{200},Q)}{Z_{v,j}},
-$$
+```
 
-where \(R_j\) is the radius at which the edge is measured and \(Z_{v,j}\geq 1\) is the finite-sampling suppression factor.
+where $R_j$ is the radius at which the edge is measured and $Z_{v,j}\geq 1$ is the finite-sampling suppression factor.
 
 ---
 
-## The AGAMA \(Z_v\) calibration files
+## The AGAMA $Z_v$ calibration files
 
 The directory
 
@@ -117,13 +117,13 @@ The directory
 AGAMA_Zv_calibration/
 ```
 
-contains precomputed calibration files for the suppression factor \(Z_v\). You do **not** need to install or run AGAMA to use this library; the required calibration products are already stored as pickle files.
+contains precomputed calibration files for the suppression factor $Z_v$. You do **not** need to install or run AGAMA to use this library; the required calibration products are already stored as pickle files.
 
-The 2026 pipeline differs from the 2025 version in an important way: the \(Z_v\) calibration is no longer indexed primarily by redshift and halo mass. Instead, it is indexed by the cosmological acceleration combination
+The 2026 pipeline differs from the 2025 version in an important way: the $Z_v$ calibration is no longer indexed primarily by redshift and halo mass. Instead, it is indexed by the cosmological acceleration combination
 
-$$
+```math
 Q \equiv \frac{q(z)H^2(z)}{H_0^2}.
-$$
+```
 
 The calibration files are named like
 
@@ -134,30 +134,30 @@ Zv_fits_qH2_-0.05.pkl
 ...
 ```
 
-where the number in the filename is the nearest available value of \(Q=q(z)H^2(z)/H_0^2\). The calibration grid covers approximately
+where the number in the filename is the nearest available value of $Q=q(z)H^2(z)/H_0^2$. The calibration grid covers approximately
 
-$$
+```math
 -1 \lesssim Q \lesssim 0.5,
-$$
+```
 
-with the value snapped to the nearest available calibration file, typically within \(\Delta Q \simeq 0.02\)–\(0.03\). A value of \(Q=0\) corresponds to removing the cosmological acceleration contribution, i.e. the static-universe limit for this term.
+with the value snapped to the nearest available calibration file, typically within $\Delta Q \simeq 0.02$–$0.03$. A value of $Q=0$ corresponds to removing the cosmological acceleration contribution, i.e. the static-universe limit for this term.
 
-For each value of \(Q\), the calibration stores a model for
+For each value of $Q$, the calibration stores a model for
 
-$$
+```math
 p(Z_{v,j}\mid N_j,Q),
-$$
+```
 
 where:
 
-- \(j\) is the radial bin,
-- \(N_j\) is the number of accepted galaxies in that radial bin,
-- \(Q=q(z)H^2(z)/H_0^2\),
-- \(Z_{v,j}\) is the suppression factor in that bin.
+- $j$ is the radial bin,
+- $N_j$ is the number of accepted galaxies in that radial bin,
+- $Q=q(z)H^2(z)/H_0^2$,
+- $Z_{v,j}$ is the suppression factor in that bin.
 
-In each pickle file, the \(Z_v\) distribution is modeled with a skew-\(t\) distribution,
+In each pickle file, the $Z_v$ distribution is modeled with a skew-$t$ distribution,
 
-$$
+```math
 Z_{v,j}
 \sim
 {\rm Skew}\text{-}t
@@ -167,41 +167,42 @@ Z_{v,j}
 \alpha_j,
 \nu_j
 \right),
-\qquad Z_{v,j}\geq 1.
-$$
+\qquad
+Z_{v,j}\geq 1.
+```
 
 Here:
 
-- \(\xi_j\) is the location parameter,
-- \(\omega_j\) is the scale parameter,
-- \(\alpha_j\) is the skewness parameter,
-- \(\nu_j\) is the fat-tail/degrees-of-freedom parameter.
+- $\xi_j$ is the location parameter,
+- $\omega_j$ is the scale parameter,
+- $\alpha_j$ is the skewness parameter,
+- $\nu_j$ is the fat-tail/degrees-of-freedom parameter.
 
-For the skewness, location, and scale parameters, the calibration stores best-fit slopes and intercepts as functions of \(\log_{10}N_j\). Schematically,
+For the skewness, location, and scale parameters, the calibration stores best-fit slopes and intercepts as functions of $\log_{10}N_j$. Schematically,
 
-$$
+```math
 \log_{10}\alpha_j(N_j)
 =
 a_{\alpha,j}\log_{10}N_j+b_{\alpha,j},
-$$
+```
 
-$$
+```math
 \log_{10}\xi_j(N_j)
 =
 a_{\xi,j}\log_{10}N_j+b_{\xi,j},
-$$
+```
 
 and
 
-$$
+```math
 \log_{10}\omega_j(N_j)
 =
 a_{\omega,j}\log_{10}N_j+b_{\omega,j}.
-$$
+```
 
-The fat-tail parameter \(\nu_j\) is also stored in each pickle file, but it is modeled with a sigmoid-like function of \(N_j\), allowing the distribution to have heavier tails at low sampling and to approach a more Gaussian form at high sampling.
+The fat-tail parameter $\nu_j$ is also stored in each pickle file, but it is modeled with a sigmoid-like function of $N_j$, allowing the distribution to have heavier tails at low sampling and to approach a more Gaussian form at high sampling.
 
-The calibration was estimated from several hundred line-of-sight draws across a range of \(N\) values chosen to cover the approximate sampling range encountered in the data. For a given cluster redshift, cosmology, radial bin, and phase-space sampling, the pipeline selects the appropriate \(Q\)-indexed calibration file and evaluates the corresponding \(Z_v\) distribution.
+The calibration was estimated from several hundred line-of-sight draws across a range of $N$ values chosen to cover the approximate sampling range encountered in the data. For a given cluster redshift, cosmology, radial bin, and phase-space sampling, the pipeline selects the appropriate $Q$-indexed calibration file and evaluates the corresponding $Z_v$ distribution.
 
 ---
 
@@ -287,9 +288,9 @@ print(results)
 
 The output dictionary contains the posterior mass summary, typically including the median and 68% credible interval for
 
-$$
+```math
 \log_{10}\left(M_{200}/M_\odot\right).
-$$
+```
 
 The notebook also produces diagnostic plots showing the phase space, measured edge, posterior distribution, and final model comparison.
 
@@ -305,7 +306,7 @@ Some systems require modest tuning of the phase-space or edge-definition hyperpa
 vesc_error_floor = 30
 ```
 
-This is the velocity uncertainty floor in km/s used in the edge likelihood. For the HeCS/HeCS-SZ-style spectroscopic data used in Rodriguez & Miller (2025), \(30\,{\rm km\,s^{-1}}\) corresponds roughly to the spectroscopic redshift uncertainty propagated into the edge-profile uncertainty.
+This is the velocity uncertainty floor in km/s used in the edge likelihood. For the HeCS/HeCS-SZ-style spectroscopic data used in Rodriguez & Miller (2025), $30\,{\rm km\,s^{-1}}$ corresponds roughly to the spectroscopic redshift uncertainty propagated into the edge-profile uncertainty.
 
 If your spectroscopic data have larger velocity uncertainties, this value should be increased accordingly.
 
@@ -315,7 +316,7 @@ If your spectroscopic data have larger velocity uncertainties, this value should
 coremin_cut = 0.44
 ```
 
-This sets the inner radius, in units of \(r_{200}\), used by the interloper-rejection logic. In practice, this controls how aggressively the shifting-gapper procedure is allowed to reject galaxies in the cluster core.
+This sets the inner radius, in units of $r_{200}$, used by the interloper-rejection logic. In practice, this controls how aggressively the shifting-gapper procedure is allowed to reject galaxies in the cluster core.
 
 Changing this value can be useful if the central phase space is visibly over-cleaned or under-cleaned.
 
@@ -327,11 +328,11 @@ cut = 4500
 
 This is the maximum allowed absolute line-of-sight peculiar velocity, in km/s, used when constructing the phase space:
 
-$$
+```math
 |v_{\rm los}| < {\tt cut}.
-$$
+```
 
-The default value is \(4500\,{\rm km\,s^{-1}}\). In some systems, especially if a high-velocity interloper is affecting the edge, a smaller value such as
+The default value is $4500\,{\rm km\,s^{-1}}$. In some systems, especially if a high-velocity interloper is affecting the edge, a smaller value such as
 
 ```python
 cut = 3000
@@ -454,9 +455,9 @@ results["acceptance"]
 
 where the mass values are in
 
-$$
+```math
 \log_{10}\left(M_{200}/M_\odot\right).
-$$
+```
 
 The plotting routines also show or save diagnostic phase-space and posterior plots, depending on the settings passed to `MassEstimator_two_stage`.
 
@@ -466,13 +467,13 @@ The plotting routines also show or save diagnostic phase-space and posterior plo
 
 Relative to the 2025 version, the main changes are:
 
-1. The \(Z_v\) model is now a skew-\(t\) distribution rather than a skew-normal distribution.
+1. The $Z_v$ model is now a skew-$t$ distribution rather than a skew-normal distribution.
 
 2. The calibration is now bin-wise:
 
-   $$
+   ```math
    \mathbf{N} = (N_1,\ldots,N_{\rm bins}),
-   $$
+   ```
 
    rather than being controlled by a single total sampling value.
 
@@ -480,13 +481,13 @@ Relative to the 2025 version, the main changes are:
 
 4. The calibration is indexed by
 
-   $$
+   ```math
    Q = q(z)H^2(z)/H_0^2,
-   $$
+   ```
 
    rather than redshift and mass separately.
 
-5. \(Z_v\) is marginalized using deterministic quadrature nodes, rather than by drawing a single stochastic realization in each likelihood evaluation.
+5. $Z_v$ is marginalized using deterministic quadrature nodes, rather than by drawing a single stochastic realization in each likelihood evaluation.
 
 6. The default user-facing mass estimator uses a two-stage procedure to reduce sensitivity to the initial mass guess and to converge to an aperture determined by the escape data.
 
@@ -514,3 +515,7 @@ The Concordance of Weak Lensing and Escape-velocity Mass Estimates for Galaxy Cl
 ApJ, 995, 213.
 https://iopscience.iop.org/article/10.3847/1538-4357/ae18ce
 ```
+
+git add README.md
+git commit -m "Fix README math rendering"
+git push
