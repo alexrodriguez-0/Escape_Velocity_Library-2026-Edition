@@ -69,7 +69,7 @@ At a high level, the pipeline:
 8. Runs an MCMC inference for
 
    $$
-   \log_{10}\left(M_{200}/M_\odot\right).
+   M_{200}.
    $$
 
 The main single-cluster entry point is:
