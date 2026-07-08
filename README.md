@@ -515,7 +515,3 @@ The Concordance of Weak Lensing and Escape-velocity Mass Estimates for Galaxy Cl
 ApJ, 995, 213.
 https://iopscience.iop.org/article/10.3847/1538-4357/ae18ce
 ```
-
-git add README.md
-git commit -m "Fix README math rendering"
-git push
