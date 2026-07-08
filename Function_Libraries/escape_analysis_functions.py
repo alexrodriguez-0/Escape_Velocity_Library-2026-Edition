@@ -1429,6 +1429,7 @@ class MCMCMassEstimator:
                 self.coremin_cut, self.cut, self.bins,
                 self.cosmo_params, self.cosmo_name, self.DirectDataPass,
                 self.NON_INC, self.smooth,
+                dlog10M_trials=(0.0, -0.05, 0.05, -0.1, 0.1, -0.15, 0.15, -0.2, 0.2, -0.3, 0.3),
                 N_min=5, N_max=320,
             )
             if not info["ok"]:
@@ -1642,8 +1643,9 @@ class MCMCMassEstimator:
                 self.cluster_positional_data, self.galaxy_positional_data,
                 self.R200_estimate,
                 self.coremin_cut, self.cut, self.bins,
-                self.NON_INC, self.cosmo_name, self.DirectDataPass,
+                self.cosmo_params, self.cosmo_name, self.DirectDataPass,
                 self.NON_INC, self.smooth,
+                dlog10M_trials=(0.0, -0.05, 0.05, -0.1, 0.1, -0.15, 0.15, -0.2, 0.2, -0.3, 0.3),
                 N_min=5, N_max=320,
             )
             if not info["ok"]:
@@ -1702,7 +1704,7 @@ class MCMCMassEstimator:
                 sigma_log10M = float(np.sqrt(1.0 / (-d2)))
 
             z = float(self.cluster_positional_data[2])
-            rho_c = rho_crit_z(z, self.cosmo_params, self.cosmo_name).value
+            rho_c = rho_crit_z(z, self.cosmo_params, self.cosmo_name).to(u.Msun / u.Mpc**3).value
             M200_map = 10.0 ** best_x
             R200_map = (3.0 * M200_map / (200.0 * 4.0 * np.pi * rho_c)) ** (1.0 / 3.0)
 
@@ -1729,59 +1731,6 @@ class MCMCMassEstimator:
             # restore original center so fit() does not mess with the estimator
             self.R200_estimate = original_R200_estimate
 
-    
-def _resolve_valid_initial_center(
-    cluster_positional_data, galaxy_positional_data,
-    R200_estimate,
-    coremin_cut, cut, bins,
-    cosmo_params, cosmo_name, DirectDataPass,
-    NON_INC, smooth,
-    dlog10M_trials=(0.0, -0.05, 0.05, -0.1, 0.1),
-    N_min=5,
-    N_max=320,
-):
-    """
-    Try the supplied center first, then nearby log-mass nudges, and return
-    the first center that passes preflight validation.
-
-    Returns
-    -------
-    info : dict
-        {"ok", "log10M_center", "R200_center", "dlog10M_used", "reason"}
-    """
-    if R200_estimate is None:
-        return {"ok": True, "log10M_center": None, "R200_center": None,
-                "dlog10M_used": None, "reason": None}
-
-    z = float(cluster_positional_data[2])
-    rho_c = rho_crit_z(z, cosmo_params, cosmo_name).value
-
-    M200_center = (4.0 * np.pi / 3.0) * 200.0 * rho_c * (float(R200_estimate) ** 3)
-    log10M_center = np.log10(M200_center)
-
-    last_reason = None
-    for dlog10M in dlog10M_trials:
-        log10M_try = log10M_center + float(dlog10M)
-        R200_try = (3.0 * (10.0 ** log10M_try) / (200.0 * 4.0 * np.pi * rho_c)) ** (1.0 / 3.0)
-
-        try:
-            preflight_validate_or_raise(
-                cluster_positional_data, galaxy_positional_data,
-                R200_try, coremin_cut, cut, bins,
-                cosmo_params, cosmo_name, DirectDataPass,
-                N_min=N_min, N_max=N_max,
-                NON_INC=NON_INC, smooth=smooth,
-            )
-            return {"ok": True,
-                    "log10M_center": float(log10M_try),
-                    "R200_center": float(R200_try),
-                    "dlog10M_used": float(dlog10M),
-                    "reason": None}
-        except InvalidSampleError as e:
-            last_reason = str(e)
-
-    return {"ok": False, "log10M_center": None, "R200_center": None,
-            "dlog10M_used": None, "reason": last_reason}
 
 def mass_estimation_preprocessing(
     cluster_positional_data, galaxy_positional_data,
@@ -2361,7 +2310,7 @@ def run_mcmc_mass_estimation(
         R200_estimate = (3.0 * (10 ** M200_estimate) / (200.0 * 4.0 * np.pi * rho_c))**(1.0/3.0)
 
         # Preflight around the WL mass in case the exact radius is slightly unlucky
-        dlog10M_trials = [0.0, -0.1, 0.1, -0.2, 0.2]
+        dlog10M_trials = [0.0, -0.05, 0.05, -0.1, 0.1, -0.15, 0.15, -0.2, 0.2, -0.3, 0.3]
 
         preflight_ok = False
         preflight_reason = None
@@ -2377,7 +2326,8 @@ def run_mcmc_mass_estimation(
                     cluster_positional_data, galaxy_positional_data,
                     R200_try,
                     coremin_cut, cut, bins,
-                    cosmo_params, cosmo_name, DirectDataPass, NON_INC, smooth
+                    cosmo_params, cosmo_name, DirectDataPass,
+                    NON_INC=NON_INC, smooth=smooth
                 )
                 preflight_ok = True
                 R200_preflight_used = R200_try
@@ -2400,6 +2350,8 @@ def run_mcmc_mass_estimation(
 
     else:
         R200_estimate = None
+        R200_preflight_used = None
+        M200_estimate_preflight = None
 
 
     estimator = MCMCMassEstimator(
@@ -2471,6 +2423,30 @@ def run_mcmc_mass_estimation(
             'one_sig_down': one_sig_down,
             'samples': samples,
             'acceptance': acc,
+            # Store the exact aperture used by the likelihood/cache.
+            # Post-processing must use this same value; recomputing from the
+            # WL mass or posterior median can move galaxies across bin edges
+            # and re-trigger rare low-N failures.
+            'R200_preprocessing_used': (
+                float(estimator.R200_estimate)
+                if getattr(estimator, 'R200_estimate', None) is not None else None
+            ),
+            'R200_preflight_used': (
+                float(R200_preflight_used)
+                if R200_preflight_used is not None else None
+            ),
+            'log10M200_preflight_used': (
+                float(M200_estimate_preflight)
+                if M200_estimate_preflight is not None else None
+            ),
+            'preflight_dlog10M_used': (
+                float(M200_estimate_preflight - M200_estimate)
+                if (M200_estimate is not None and M200_estimate_preflight is not None) else None
+            ),
+            'N_hat_preprocessing_used': (
+                np.asarray(estimator._cache['N_hat'], float).copy()
+                if hasattr(estimator, '_cache') and 'N_hat' in estimator._cache else None
+            ),
         }
 
         return results
@@ -2663,33 +2639,43 @@ def mass_estimation_post_processing(
     else:
         R200_estimate_phys = None
 
-    # Pick the nominal R200 we'd use for preprocessing.
-    if fix_R200:
-        R200_unperturbed = R200_estimate_phys
+    # Pick the same R200/aperture used by the likelihood whenever it is available.
+    # This is essential for fix_R200=True: recomputing from the WL mass or posterior
+    # median can move one or two galaxies across bin edges and make post-processing
+    # fail even though the actual MCMC run was valid.
+    R200_from_results = results.get('R200_preprocessing_used', None)
+
+    if fix_R200 and (R200_from_results is not None) and np.isfinite(float(R200_from_results)):
+        R200_med = float(R200_from_results)
+        R200_estimate_for_preprocessing = R200_med
     else:
-        R200_unperturbed = (3.0 * M200_med / (200.0 * 4.0 * np.pi * rho))**(1.0/3.0)
+        if fix_R200:
+            R200_unperturbed = R200_estimate_phys
+        else:
+            R200_unperturbed = (3.0 * M200_med / (200.0 * 4.0 * np.pi * rho))**(1.0/3.0)
 
-    # Resolve to a valid (possibly slightly perturbed) center so that
-    # preprocessing has adequate per-bin sampling. Without this, the
-    # unperturbed mass can leave N_hat below the Z_v calibration floor
-    # and mass_estimation_preprocessing raises.
-    info = _resolve_valid_initial_center(
-        cluster_positional_data, galaxy_positional_data,
-        R200_unperturbed,
-        coremin_cut, cut, bins,
-        cosmo_params, cosmo_name, DirectDataPass,
-        NON_INC, smooth,
-        dlog10M_trials=(0.0, -0.05, 0.05, -0.1, 0.1),
-        N_min=5, N_max=320,
-    )
-    if not info["ok"]:
-        raise InvalidSampleError(
-            f"[post] Could not resolve a valid center for post-processing: {info['reason']}"
+        # Resolve to a valid (possibly slightly perturbed) center so that
+        # preprocessing has adequate per-bin sampling. Without this, the
+        # unperturbed mass can leave N_hat below the Z_v calibration floor
+        # and mass_estimation_preprocessing raises.
+        info = _resolve_valid_initial_center(
+            cluster_positional_data, galaxy_positional_data,
+            R200_unperturbed,
+            coremin_cut, cut, bins,
+            cosmo_params, cosmo_name, DirectDataPass,
+            NON_INC, smooth,
+            dlog10M_trials=(0.0, -0.05, 0.05, -0.1, 0.1, -0.15, 0.15, -0.2, 0.2, -0.3, 0.3),
+            N_min=5, N_max=320,
         )
+        if not info["ok"]:
+            raise InvalidSampleError(
+                f"[post] Could not resolve a valid center for post-processing: {info['reason']}"
+            )
 
-    R200_med = (
-        float(info["R200_center"]) if info["R200_center"] is not None else R200_unperturbed
-    )
+        R200_med = (
+            float(info["R200_center"]) if info["R200_center"] is not None else R200_unperturbed
+        )
+        R200_estimate_for_preprocessing = R200_med if fix_R200 else R200_estimate_phys
 
     (
         galaxy_r, galaxy_v, N_hat,
@@ -2697,8 +2683,9 @@ def mass_estimation_post_processing(
         galaxy_r_with_interlopers, galaxy_v_with_interlopers
     ) = mass_estimation_preprocessing(
         cluster_positional_data, galaxy_positional_data,
-        R200_med, R200_estimate_phys, coremin_cut, cut, bins,
-        cosmo_params, cosmo_name, DirectDataPass, NON_INC, smooth
+        R200_med, R200_estimate_for_preprocessing, coremin_cut, cut, bins,
+        cosmo_params, cosmo_name, DirectDataPass, NON_INC, smooth,
+        validate_N=True
     )
 
     vesc_data_err = np.full(int(bins), float(vesc_error_floor), dtype=float)
