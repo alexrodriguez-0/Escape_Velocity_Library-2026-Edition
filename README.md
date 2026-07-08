@@ -66,11 +66,7 @@ At a high level, the pipeline:
 
 7. Corrects for the finite-sampling suppression of the observed phase-space edge using the calibrated \(Z_v\) model.
 
-8. Runs an MCMC inference for
-
-   $$
-   M_{200}.
-   $$
+8. Runs an MCMC inference for \(M_{200}\).
 
 The main single-cluster entry point is:
 
