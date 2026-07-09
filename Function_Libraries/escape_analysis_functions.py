@@ -3136,7 +3136,7 @@ def MassEstimator_two_stage(
     if (M200_estimate is not None) and (fix_R200==True):
         return results
 
-    #If M200 is provided and fix_R200 is false, then the pilot run is the full run
+    #If M200 is not provided and fix_R200 is True, you cannot perform a run since you are fixing to an unknown mass
     elif (M200_estimate is None) and (fix_R200==True):
         raise ValueError("You cannot perform a run if you are fixing to an unknown R200")
     
