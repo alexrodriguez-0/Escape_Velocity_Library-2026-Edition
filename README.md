@@ -1,8 +1,8 @@
 # Escape Velocity Library — 2026 Edition
 
-Tools to infer **galaxy cluster masses** from spectroscopic radius–velocity phase space using the **escape-velocity edge**. This repository is the 2026 update of the 2025 Escape Velocity Library and implements the updated escape-mass pipeline used in **Rodriguez et al. 2026a, in prep.**
+Tools to infer **galaxy cluster masses** from spectroscopic radius–velocity phase-space using the **escape-velocity edge**. This repository is the 2026 update of the 2025 Escape Velocity Library and implements the updated escape-mass pipeline used in **Rodriguez et al. 2026a, in prep.**
 
-The basic idea is to identify the boundary of the projected cluster phase space, model that boundary as a down-sampled version of the three-dimensional escape-velocity profile, and infer the cluster mass by comparing the observed edge to a theoretical escape profile.
+The basic goal is to identify the boundary of the projected cluster phase-space, model that boundary as a down-sampled version of the three-dimensional escape-velocity profile, and infer the cluster mass by comparing the observed edge to a theoretical escape profile.
 
 > **Please cite:** Rodriguez et al. 2026a, in prep.  
 > For the original weak-lensing/escape-velocity concordance analysis, please also cite:  
@@ -48,7 +48,7 @@ At a high level, the pipeline:
    RA_deg   DEC_deg   redshift
    ```
 
-2. Builds the projected radius–velocity phase space around a cluster center.
+2. Builds the projected radius–velocity phase-space around a cluster center.
 
 3. Computes line-of-sight velocities using
 
@@ -58,7 +58,7 @@ At a high level, the pipeline:
 
    where $z_g$ is the galaxy redshift and $z_c$ is the cluster redshift.
 
-4. Iteratively recenters the phase space and removes interlopers using a shifting-gapper-style procedure.
+4. Iteratively recenters the phase-space and removes interlopers using a shifting-gapper-style procedure.
 
 5. Measures the projected escape-velocity edge in radial bins.
 
@@ -223,7 +223,7 @@ The output dictionary contains the posterior mass summary, typically including t
 \log_{10}\left(M_{200}/M_\odot\right).
 ```
 
-The notebook also produces diagnostic plots showing the phase space, measured edge, posterior distribution, and final model comparison.
+The notebook also produces diagnostic plots showing the phase-space, measured edge, posterior distribution, and final model comparison.
 
 ---
 
@@ -249,7 +249,7 @@ coremin_cut = 0.44
 
 This sets the inner radius, in units of $r_{200}$, used by the interloper-rejection logic. In practice, this controls how aggressively the shifting-gapper procedure is allowed to reject galaxies in the cluster core.
 
-Changing this value can be useful if the central phase space is visibly over-cleaned or under-cleaned.
+Changing this value can be useful if the central phase-space is visibly over-cleaned or under-cleaned.
 
 ### `cut`
 
@@ -257,7 +257,7 @@ Changing this value can be useful if the central phase space is visibly over-cle
 cut = 4500
 ```
 
-This is the maximum allowed absolute line-of-sight peculiar velocity, in km/s, used when constructing the phase space:
+This is the maximum allowed absolute line-of-sight peculiar velocity, in km/s, used when constructing the phase-space:
 
 ```math
 |v_{\rm los}| < {\tt cut}.
@@ -296,7 +296,7 @@ The two-stage pipeline shows both the pilot-stage and production-stage results. 
 1. The pilot posterior.
 2. The production posterior.
 3. The phase-space edge profile.
-4. Whether the measured edge visually follows the boundary of the galaxy phase space.
+4. Whether the measured edge visually follows the boundary of the galaxy phase-space.
 5. Whether individual bins are dominated by obvious interlopers or very low sampling.
 
 If the pilot posterior is highly non-Gaussian, strongly multi-modal, or clearly inconsistent with the visual phase-space boundary, consider changing:
