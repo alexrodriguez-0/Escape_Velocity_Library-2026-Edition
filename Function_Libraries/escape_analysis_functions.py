@@ -19,8 +19,7 @@ Key updates implemented in this version of the pipeline
 The main user-facing entry points are:
   - :class:`EscapeVelocityModeling` (theory + Z_v calibration),
   - :class:`MCMCMassEstimator` (single-cluster mass inference),
-  - :class:`CosmologyEstimator` and :class:`CosmologyEstimator_qH2` (cosmology fits),
-  - :func:`MassEstimator_main` (batch driver with post-processing).
+  - :func:`MassEstimator_two_stage` (batch driver with post-processing).
 
 Notes
 -----
