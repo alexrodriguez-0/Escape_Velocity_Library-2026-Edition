@@ -2455,6 +2455,7 @@ def run_mcmc_mass_estimation(
         pool.join()
 
 
+
 def mass_estimation_post_processing(
     escape_modeler,
     results,
@@ -2470,7 +2471,6 @@ def mass_estimation_post_processing(
     DirectDataPass,
     vesc_error_floor,
     cluster_name,
-    smooth_Zv=True,
     savefig_path=None,
     save_format="pdf",
     NON_INC=True,
@@ -2515,10 +2515,6 @@ def mass_estimation_post_processing(
     cluster_name : str
         Plot label and figure naming stem.
 
-    smooth_Zv : bool, default=True
-        If True, apply bin-to-bin smoothing to the Z_v summary used in plots (does not
-        change the already-computed posterior; it only affects displayed curves).
-
     savefig_path : str or None, default=None
         Directory to write figures. If None, figures are not written.
 
@@ -2546,7 +2542,6 @@ def mass_estimation_post_processing(
     """
 
 
-
     def _mixture_summary(v_theory_vec, N_hat, qH2, escape_modeler, *, predictive=False, sigma=None, rng=None):
         """Summarize a 1D sample distribution with a simple Gaussian-mixture heuristic.
 
@@ -2568,11 +2563,11 @@ def mass_estimation_post_processing(
         Z_nodes, logW = escape_modeler.Zv_quantile_nodes(N_hat, nb, qH2)
         Z_nodes = np.asarray(Z_nodes, float)  # shape: (K, nb)
 
-        if smooth_Zv:
-            for k in range(Z_nodes.shape[0]):
-                Z_nodes[k, :] = ClusterDataHandler._smooth_anchor_monotonic(
-                    Z_nodes[k, :]
-                )
+        #Smooth Zv for visual purposes
+        for k in range(Z_nodes.shape[0]):
+            Z_nodes[k, :] = ClusterDataHandler._smooth_anchor_monotonic(
+                Z_nodes[k, :]
+            )
 
         # Normalize weights
         logW = logW - logsumexp(logW, axis=0, keepdims=True)
@@ -2746,6 +2741,7 @@ def mass_estimation_post_processing(
 
     plt.show()
     plt.close(fig)
+
 
     
 
@@ -2936,7 +2932,7 @@ def MassEstimator(
             M200_estimate, coremin_cut, cut, bins, cosmo_params, cosmo_name,
             fix_R200, DirectDataPass, vesc_error_floor, cluster_name,
             savefig_path=savefig_path, save_format=save_format,
-            NON_INC=NON_INC, smooth=smooth
+            NON_INC=NON_INC
         )
 
 
